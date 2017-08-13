@@ -1,0 +1,14 @@
+{
+  "name": "spotify-presave-campaign-api",
+  "version": "1.0.0",
+  "description": "Serverless CRUD service for managing spotify presave campaigns",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "moment": "^2.18.1",
+    "querystring": "^0.2.0",
+    "request": "^2.81.0",
+    "serverless-pseudo-parameters": "^1.1.5",
+    "uuid": "^2.0.3"
+  }
+}

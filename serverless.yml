@@ -1,0 +1,107 @@
+service: streaming-pre-save
+
+frameworkVersion: ">=1.1.0 <2.0.0"
+
+provider:
+  name: aws
+  runtime: nodejs4.3
+  role: arn:aws:iam::353948116047:role/music-presave-application
+  environment:
+    RELEASES_TABLE: ${self:service}-releases-${opt:stage, self:provider.stage}
+    CAMPAIGNS_TABLE: ${self:service}-campaigns-${opt:stage, self:provider.stage}
+    ACCESS_TOKENS_TABLE: ${self:service}-access-tokens-${opt:stage, self:provider.stage}
+    SPOTIFY_CLIENT_ID: adc4a99fec564ab19629189544e49c44
+    SPOTIFY_CLIENT_SECRET: b98ee2957e874fb99ab17fec2838efcb
+
+functions:
+  scheduled-release-job:
+    handler: scheduled-jobs/release.release
+    events:
+      # Invoke Lambda function every minute
+      - schedule: rate(1 minute)
+  create-release:
+    handler: releases/create.create
+  update-release:
+    handler: releases/update.update
+    events:
+      - http:
+          path: releases/{releaseId}
+          method: post
+          cors: true
+  create-campaign:
+    handler: campaigns/create.create
+    events:
+      - http:
+          path: campaigns
+          method: post
+          cors: true
+  list-campaign:
+    handler: campaigns/list.list
+    events:
+      - http:
+          path: campaigns
+          method: get
+          cors: true
+  get-campaign:
+    handler: campaigns/get.get
+    events:
+      - http:
+          path: campaigns/{campaignId}
+          method: get
+          cors: true
+  update-campaign:
+    handler: campaigns/update.update
+    events:
+      - http:
+          path: campaigns/{campaignId}
+          method: put
+          cors: true
+  delete-campaign:
+    handler: campaigns/delete.delete
+    events:
+      - http:
+          path: campaigns/{campaignId}
+          method: delete
+          cors: true
+resources:
+  Resources:
+    CampaignsDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: campaignId
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: campaignId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+        TableName: ${self:provider.environment.CAMPAIGNS_TABLE}
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
+    ReleasesDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: releaseId
+            AttributeType: N
+          -
+            AttributeName: campaignId
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: releaseId
+            KeyType: HASH
+          -
+            AttributeName: campaignId
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.RELEASES_TABLE}
