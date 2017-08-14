@@ -23,7 +23,6 @@ module.exports.create = (event, context, callback) => {
       campaignId: data.campaignId,
       artistId: data.artistId,
       releaseDate: releaseDate,
-      subscribers: [],
       completed: false,
       createdAt: timestamp,
       updatedAt: timestamp

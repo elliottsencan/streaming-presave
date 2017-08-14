@@ -7,27 +7,20 @@ provider:
   runtime: nodejs4.3
   role: arn:aws:iam::353948116047:role/music-presave-application
   environment:
-    RELEASES_TABLE: ${self:service}-releases-${opt:stage, self:provider.stage}
     CAMPAIGNS_TABLE: ${self:service}-campaigns-${opt:stage, self:provider.stage}
-    ACCESS_TOKENS_TABLE: ${self:service}-access-tokens-${opt:stage, self:provider.stage}
+    SUBSCRIBERS_TABLE: ${self:service}-subscribers-${opt:stage, self:provider.stage}
+    UPDATE_QUEUE_TABLE: ${self:service}-update-queue-${opt:stage, self:provider.stage}
     SPOTIFY_CLIENT_ID: adc4a99fec564ab19629189544e49c44
     SPOTIFY_CLIENT_SECRET: b98ee2957e874fb99ab17fec2838efcb
 
 functions:
-  scheduled-release-job:
-    handler: scheduled-jobs/release.release
-    events:
+  scheduled-job:
+    handler: scheduled-jobs/campaigns.query
+    # events:
       # Invoke Lambda function every minute
-      - schedule: rate(1 minute)
-  create-release:
-    handler: releases/create.create
-  update-release:
-    handler: releases/update.update
-    events:
-      - http:
-          path: releases/{releaseId}
-          method: post
-          cors: true
+      # - schedule: rate(1 minute)
+  update-queue:
+    handler: update-queue/process.process
   create-campaign:
     handler: campaigns/create.create
     events:
@@ -83,20 +76,20 @@ resources:
         TableName: ${self:provider.environment.CAMPAIGNS_TABLE}
         StreamSpecification:
           StreamViewType: NEW_IMAGE
-    ReleasesDynamoDbTable:
+    SubscribersDynamoDbTable:
       Type: 'AWS::DynamoDB::Table'
       DeletionPolicy: Retain
       Properties:
         AttributeDefinitions:
           -
-            AttributeName: releaseId
-            AttributeType: N
+            AttributeName: subscriberId
+            AttributeType: S
           -
             AttributeName: campaignId
             AttributeType: S
         KeySchema:
           -
-            AttributeName: releaseId
+            AttributeName: subscriberId
             KeyType: HASH
           -
             AttributeName: campaignId
@@ -104,4 +97,28 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-        TableName: ${self:provider.environment.RELEASES_TABLE}
+        TableName: ${self:provider.environment.SUBSCRIBERS_TABLE}
+    UpdateQueueDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: subscriberId
+            AttributeType: S
+          -
+            AttributeName: campaignId
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: subscriberId
+            KeyType: HASH
+          -
+            AttributeName: campaignId
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.UPDATE_QUEUE_TABLE}
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE

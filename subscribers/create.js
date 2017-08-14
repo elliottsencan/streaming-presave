@@ -10,25 +10,26 @@ module.exports.create = (event, context, callback) => {
 
   // validation
   if (
-    typeof data.subscribers === "undefined"
+    typeof data.subscriberId === "undefined" ||
+    typeof data.campaignId === "undefined" ||
+    typeof data.playlistId === "undefined" ||
+    typeof data.email === "undefined"
   ) {
     console.error("Validation Failed");
-    callback(new Error("Couldn't update the campaign."));
+    callback(new Error("Couldn't update subscriber."));
     return;
   }
 
   const params = {
-    TableName: process.env.CAMPAIGNS_TABLE,
-    Key: {
-      campaignId: event.pathParameters.campaignId
-    },
-    ExpressionAttributeValues: {
-      ':subscribers': [data.subscribers],
-      ":updatedAt": timestamp
-    },
-    UpdateExpression:
-      "SET subscribers = list_append(subscribers, :subscribers), updatedAt = :updatedAt",
-    ReturnValues: "ALL_NEW"
+    TableName: process.env.SUBSCRIBERS_TABLE,
+    Item: {
+      subscriberId: data.subscriberId,
+      campaignId: data.campaignId,
+      playlistId: data.playlistId,
+      email: email,
+      createdAt: timestamp,
+      updatedAt: timestamp
+    }
   };
 
   // update the campaign in the database
@@ -36,7 +37,7 @@ module.exports.create = (event, context, callback) => {
     // handle potential errors
     if (error) {
       console.error(error);
-      callback(new Error("Couldn't update the campaign."));
+      callback(new Error("Couldn't update the subscriber."));
       return;
     }
 

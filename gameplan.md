@@ -1,3 +1,33 @@
+authorize from spotify
+create campaign
+-- campaign id (refresh token)
+-- artist id
+-- completed (false)
+-- release date key (normalized to beginning of day in milliseconds)
+triggers new entry in releaseDate table
+-- release date key (normalized to beginning of day in milliseconds) and campaign id
+subscribers added through api
+-- refresh token
+-- playlist id
+-- email
+triggers subscriber email push to mailchimp
+
+cron job
+-- query all release records by beginning of day
+-- get all matching campaigns
+-- refresh spotify token
+-- grab most recent album
+
+update queue
+- subscriber refresh token
+- playlistid
+- spotify song uris
+- campaign id
+
+on insert
+get access token
+
+
 create campaign
 -- campaign id (refresh token)
 -- artist id
@@ -17,7 +47,7 @@ cron job
    -- select campaign id record from campaign table
    -- refresh token
    -- fetch most recent album from Spotify
-   -- for each subscribers
+   -- insert new update queue record for each subscriber
       -- refresh access token with refresh token
       -- push most recent album to playlist using *subscriber* access token
 
@@ -33,3 +63,14 @@ lambdas
 
 triggers
 -- create releaseDates on campaign table record insert
+
+
+update queue
+- subscriber refresh token
+- playlistid
+- spotify song uris
+- campaign id
+- completed
+
+on insert
+get access token
