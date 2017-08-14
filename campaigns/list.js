@@ -1,8 +1,8 @@
 "use strict";
 
 const AWS = require("aws-sdk"); // eslint-disable-line import/no-extraneous-dependencies
-
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
+
 const params = {
   TableName: process.env.CAMPAIGNS_TABLE
 };

@@ -1,14 +1,17 @@
 "use strict";
 const AWS = require("aws-sdk"); // eslint-disable-line import/no-extraneous-dependencies
+const moment = require("moment");
+const uuid = require("uuid");
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 module.exports.create = (event, context, callback) => {
   const timestamp = new Date().getTime();
   const data = JSON.parse(event.body);
-  const releaseFormat = "MMDDYY";
-  const releaseDate = data.releaseDate;
+  const releaseDate = moment().isUtc()
+    ? moment(data.releaseDate).startOf("day").valueOf()
+    : moment.utc(data.releaseDate).startOf("day").valueOf();
   if (
-    typeof data.campaignId !== "string" ||
+    typeof data.refreshToken !== "string" ||
     typeof data.artistId !== "string" ||
     typeof releaseDate === "undefined"
   ) {
@@ -20,10 +23,10 @@ module.exports.create = (event, context, callback) => {
   const params = {
     TableName: process.env.CAMPAIGNS_TABLE,
     Item: {
-      campaignId: data.campaignId,
+      campaignId: uuid.v1(),
+      refreshToken : data.refreshToken,
       artistId: data.artistId,
       releaseDate: releaseDate,
-      completed: false,
       createdAt: timestamp,
       updatedAt: timestamp
     }

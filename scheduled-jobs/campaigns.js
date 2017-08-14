@@ -3,26 +3,25 @@
 const AWS = require("aws-sdk"); // eslint-disable-line import/no-extraneous-dependencies
 const moment = require("moment");
 var request = require("request");
-var querystring = require("querystring");
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 module.exports.query = (event, context, callback) => {
-  const querySelector = moment().isUtc()
+  const releaseDate = moment().isUtc()
     ? moment().startOf("day").valueOf()
     : moment.utc().startOf("day").valueOf();
-  console.log("query selector ", querySelector);
+
   const params = {
     TableName: process.env.CAMPAIGNS_TABLE,
-    KeyConditionExpression: "#releaseDate = :querySelector",
+    KeyConditionExpression: "#releaseDate = :releaseDate",
     ExpressionAttributeNames: {
       "#releaseDate": "releaseDate"
     },
     ExpressionAttributeValues: {
-      ":querySelector": querySelector
+      ":releaseDate": releaseDate
     }
   };
 
-  dynamoDb.query(params, (error, result) => {
+  dynamoDb.scan(params, (error, result) => {
     // handle potential errors
     if (error) {
       console.error(error);
@@ -33,9 +32,7 @@ module.exports.query = (event, context, callback) => {
 
     result.Items.forEach(function(item) {
       // requesting access token from refresh token
-      var refresh_token = item.campaignId;
-      console.log("client id ", process.env.SPOTIFY_CLIENT_ID);
-      console.log("client secret ", process.env.SPOTIFY_CLIENT_SECRET);
+      var refreshToken = item.refreshToken;
       console.log("iitem ", JSON.stringify(item));
       var authOptions = {
         url: "https://accounts.spotify.com/api/token",
@@ -50,7 +47,7 @@ module.exports.query = (event, context, callback) => {
         },
         form: {
           grant_type: "refresh_token",
-          refresh_token: refresh_token
+          refresh_token: refreshToken
         },
         json: true
       };

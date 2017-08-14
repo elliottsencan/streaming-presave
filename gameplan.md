@@ -2,10 +2,7 @@ authorize from spotify
 create campaign
 -- campaign id (refresh token)
 -- artist id
--- completed (false)
 -- release date key (normalized to beginning of day in milliseconds)
-triggers new entry in releaseDate table
--- release date key (normalized to beginning of day in milliseconds) and campaign id
 subscribers added through api
 -- refresh token
 -- playlist id
@@ -74,3 +71,13 @@ update queue
 
 on insert
 get access token
+
+sample api requests
+
+create campaign
+
+curl -X POST https://uga2hb00rc.execute-api.us-east-1.amazonaws.com/dev/campaigns --data '{ "refreshToken" : "AQCzCkSGsXBxgqW4mSjNU9B9CO9GjUoLb0bD55hJbKSOUdm_sdfCo1_YayP5LoI_tCKDrXXC20nlY3gNSs7Nw5u8dqMX9E5A1jgVggOQmFWgK8xotCLxByBmVTvUTNKD3H0", "artistId": "hollywoodprinciple", "releaseDate" : 1502675792993}'
+
+create subscriber
+
+curl -X POST https://uga2hb00rc.execute-api.us-east-1.amazonaws.com/dev/subscribers --data '{ "campaignId" : "bacc2440-8096-11e7-a762-dfedfc045996", "refreshToken" : "AQCzCkSGsXBxgqW4mSjNU9B9CO9GjUoLb0bD55hJbKSOUdm_sdfCo1_YayP5LoI_tCKDrXXC20nlY3gNSs7Nw5u8dqMX9E5A1jgVggOQmFWgK8xotCLxByBmVTvUTNKD3H0", "playlistId": "6sM5NRcuAVVLyVWXbEFG40", "email" : "elliott.sencan-11@sandiego.edu"}'

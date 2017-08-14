@@ -1,7 +1,7 @@
 "use strict";
 
 const AWS = require("aws-sdk"); // eslint-disable-line import/no-extraneous-dependencies
-
+const uuid = require("uuid");
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 module.exports.create = (event, context, callback) => {
@@ -10,7 +10,7 @@ module.exports.create = (event, context, callback) => {
 
   // validation
   if (
-    typeof data.subscriberId === "undefined" ||
+    typeof data.refreshToken === "undefined" ||
     typeof data.campaignId === "undefined" ||
     typeof data.playlistId === "undefined" ||
     typeof data.email === "undefined"
@@ -23,28 +23,29 @@ module.exports.create = (event, context, callback) => {
   const params = {
     TableName: process.env.SUBSCRIBERS_TABLE,
     Item: {
-      subscriberId: data.subscriberId,
+      subscriberId: uuid.v1(),
+      refreshToken: data.refreshToken,
       campaignId: data.campaignId,
       playlistId: data.playlistId,
-      email: email,
+      email: data.email,
       createdAt: timestamp,
       updatedAt: timestamp
     }
   };
 
-  // update the campaign in the database
-  dynamoDb.update(params, (error, result) => {
+  // write the subscriber to the database
+  dynamoDb.put(params, error => {
     // handle potential errors
     if (error) {
       console.error(error);
-      callback(new Error("Couldn't update the subscriber."));
+      callback(new Error("Couldn't create the campaign subscriber."));
       return;
     }
 
     // create a response
     const response = {
       statusCode: 200,
-      body: JSON.stringify(result.Attributes)
+      body: JSON.stringify(params.Item)
     };
     callback(null, response);
   });

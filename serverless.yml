@@ -8,6 +8,7 @@ provider:
   role: arn:aws:iam::353948116047:role/music-presave-application
   environment:
     CAMPAIGNS_TABLE: ${self:service}-campaigns-${opt:stage, self:provider.stage}
+    RELEASES_TO_CAMPAIGNS_TABLE: ${self:service}-campaigns-to-releases-${opt:stage, self:provider.stage}
     SUBSCRIBERS_TABLE: ${self:service}-subscribers-${opt:stage, self:provider.stage}
     UPDATE_QUEUE_TABLE: ${self:service}-update-queue-${opt:stage, self:provider.stage}
     SPOTIFY_CLIENT_ID: adc4a99fec564ab19629189544e49c44
@@ -21,6 +22,15 @@ functions:
       # - schedule: rate(1 minute)
   update-queue:
     handler: update-queue/process.process
+  create-release:
+    handler: releases/create.create
+  create-subscribers:
+    handler: subscribers/create.create
+    events:
+      - http:
+          path: subscribers
+          method: post
+          cors: true
   create-campaign:
     handler: campaigns/create.create
     events:
@@ -76,6 +86,28 @@ resources:
         TableName: ${self:provider.environment.CAMPAIGNS_TABLE}
         StreamSpecification:
           StreamViewType: NEW_IMAGE
+    ReleaseToCampaignsDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: releaseDate
+            AttributeType: N
+          -
+            AttributeName: campaignId
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: releaseDate
+            KeyType: HASH
+          -
+            AttributeName: campaignId
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.RELEASES_TO_CAMPAIGNS_TABLE}
     SubscribersDynamoDbTable:
       Type: 'AWS::DynamoDB::Table'
       DeletionPolicy: Retain
