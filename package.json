@@ -5,10 +5,12 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "bluebird": "^3.5.0",
     "moment": "^2.18.1",
     "querystring": "^0.2.0",
     "request": "^2.81.0",
     "serverless-pseudo-parameters": "^1.1.5",
+    "spotify-web-api-node": "^2.4.0",
     "uuid": "^2.0.3"
   }
 }

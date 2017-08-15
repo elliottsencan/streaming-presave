@@ -2,69 +2,180 @@
 
 const AWS = require("aws-sdk"); // eslint-disable-line import/no-extraneous-dependencies
 const moment = require("moment");
-var request = require("request");
-const dynamoDb = new AWS.DynamoDB.DocumentClient();
+const request = require("request");
+const uuid = require("uuid");
+const SpotifyWebApi = require("spotify-web-api-node");
+const Promise = require("bluebird");
+const dynamoDb = Promise.promisifyAll(new AWS.DynamoDB.DocumentClient());
+const $post = Promise.promisify(request.post);
+const spotifyConfig = {
+  clientId: process.env.SPOTIFY_CLIENT_ID,
+  clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+  redirectUri: "http://localhost:8080/callback"
+};
 
 module.exports.query = (event, context, callback) => {
+  let spotifyHandlers = {};
   const releaseDate = moment().isUtc()
     ? moment().startOf("day").valueOf()
     : moment.utc().startOf("day").valueOf();
 
-  const params = {
-    TableName: process.env.CAMPAIGNS_TABLE,
-    KeyConditionExpression: "#releaseDate = :releaseDate",
-    ExpressionAttributeNames: {
-      "#releaseDate": "releaseDate"
-    },
-    ExpressionAttributeValues: {
-      ":releaseDate": releaseDate
-    }
+  const fetchCampaignsByReleaseDate = releaseDate => {
+    const campaignParams = {
+      TableName: process.env.CAMPAIGNS_TABLE,
+      IndexName: "releaseDate-index",
+      KeyConditionExpression: "#releaseDate = :releaseDate",
+      ExpressionAttributeNames: {
+        "#releaseDate": "releaseDate"
+      },
+      ExpressionAttributeValues: {
+        ":releaseDate": releaseDate
+      }
+    };
+
+    return dynamoDb.queryAsync(campaignParams).then(result => {
+      return result.Items;
+    });
   };
 
-  dynamoDb.scan(params, (error, result) => {
-    // handle potential errors
-    if (error) {
-      console.error(error);
-      callback(new Error("Couldn't fetch campaign."));
-      return;
-    }
-    console.log("fetched campaign records ", JSON.stringify(result));
+  const fetchSubscribers = campaignId => {
+    const subscriberParams = {
+      TableName: process.env.SUBSCRIBERS_TABLE,
+      IndexName: "campaignId-index",
+      KeyConditionExpression: "#campaignId = :campaignId",
+      ExpressionAttributeNames: {
+        "#campaignId": "campaignId"
+      },
+      ExpressionAttributeValues: {
+        ":campaignId": campaignId
+      }
+    };
 
-    result.Items.forEach(function(item) {
-      // requesting access token from refresh token
-      var refreshToken = item.refreshToken;
-      console.log("iitem ", JSON.stringify(item));
-      var authOptions = {
-        url: "https://accounts.spotify.com/api/token",
-        headers: {
-          Authorization:
-            "Basic " +
-            new Buffer(
-              process.env.SPOTIFY_CLIENT_ID +
-                ":" +
-                process.env.SPOTIFY_CLIENT_SECRET
-            ).toString("base64")
-        },
-        form: {
-          grant_type: "refresh_token",
-          refresh_token: refreshToken
-        },
-        json: true
-      };
+    return dynamoDb.queryAsync(subscriberParams).then(result => {
+      return result.Items;
+    });
+  };
 
-      console.log("fetching access token");
+  const getSpotifyAuthHeader = () => {
+    return (
+      "Basic " +
+      new Buffer(
+        process.env.SPOTIFY_CLIENT_ID + ":" + process.env.SPOTIFY_CLIENT_SECRET
+      ).toString("base64")
+    );
+  };
 
-      request.post(authOptions, function(error, response, body) {
-        console.log(JSON.stringify(body));
-        if (!error && response.statusCode === 200) {
-          // console.log(body.access_token);
-        }
+  const fetchAccessToken = refreshToken => {
+    const authParams = {
+      url: "https://accounts.spotify.com/api/token",
+      headers: {
+        Authorization: getSpotifyAuthHeader()
+      },
+      form: {
+        grant_type: "refresh_token",
+        refresh_token: refreshToken
+      },
+      json: true
+    };
 
-        const resp = {
-          statusCode: 200
-          // body: JSON.stringify(result.Item),
+    return $post(authParams).then(response => {
+      return response.body.access_token;
+    });
+  };
+
+  const getMostRecentAlbumTracks = (handler, artistId) => {
+    return handler
+      .getArtistAlbums(artistId)
+      .then(data => {
+        return data.body.items[0].id;
+      })
+      .then(albumId => {
+        return handler.getAlbumTracks(albumId).then(data => {
+          return data.body.items
+            .map(item => {
+              return item.uri;
+            })
+            .join(",");
+        });
+      });
+  };
+
+  const createUpdateQueueRecord = data => {
+    const timestamp = new Date().getTime();
+    const updateParams = {
+      TableName: process.env.UPDATE_QUEUE_TABLE,
+      Item: {
+        updateId: uuid.v1(),
+        complete: false,
+        accessToken: data.accessToken,
+        playlistId: data.playlistId,
+        uris: data.uris,
+        campaignId: data.campaignId,
+        subscriberId: data.subscriberId,
+        createdAt: timestamp,
+        updatedAt: timestamp
+      }
+    };
+
+    return dynamoDb.putAsync(updateParams);
+  };
+  /*
+  control flow
+  */
+
+  const getCampaignData = campaign => {
+    const campaignId = campaign.campaignId;
+    const artistId = campaign.artistId;
+    const refreshToken = campaign.refreshToken;
+    spotifyHandlers[campaignId] = new SpotifyWebApi(spotifyConfig);
+    return fetchAccessToken(refreshToken).then(accessToken => {
+      spotifyHandlers[campaignId].setAccessToken(accessToken);
+      return getMostRecentAlbumTracks(
+        spotifyHandlers[campaignId],
+        artistId
+      ).then(uris => {
+        return {
+          uris: uris,
+          campaignId: campaignId
         };
-        callback(null, resp);
+      });
+    });
+  };
+
+  const getSubscriberData = resolvedSubscriber => {
+    const subscriberId = resolvedSubscriber.subscriberId;
+    const refreshToken = resolvedSubscriber.refreshToken;
+    const playlistId = resolvedSubscriber.playlistId;
+    return fetchAccessToken(refreshToken).then(accessToken => {
+      return {
+        subscriberId: subscriberId,
+        playlistId: playlistId,
+        accessToken: accessToken
+      };
+    });
+  };
+
+  const getSubscribers = data => {
+    return fetchSubscribers(data.campaignId);
+  };
+
+  fetchCampaignsByReleaseDate(releaseDate).then(campaigns => {
+    const campaignData = campaigns.map(getCampaignData);
+
+    Promise.all(campaignData).then(cdata => {
+      const subscribers = [].concat.apply([], cdata.map(getSubscribers));
+      Promise.all(subscribers).then(doubleSubscriberArray => {
+        const resolvedSubscribers = [].concat.apply([], doubleSubscriberArray);
+        const subscriberData = resolvedSubscribers.map(getSubscriberData);
+        Promise.all(subscriberData).then(sdata => {
+          const queueData = Object.assign({}, cdata[0], sdata[0]);
+          createUpdateQueueRecord(queueData).then(() => {
+            const response = {
+              statusCode: 200
+            };
+            callback(null, response);
+          });
+        });
       });
     });
   });
