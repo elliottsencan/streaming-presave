@@ -1,4 +1,4 @@
-service: streaming-pre-save
+service: streaming-presave-app
 
 frameworkVersion: ">=1.1.0 <2.0.0"
 
@@ -8,19 +8,23 @@ provider:
   role: arn:aws:iam::353948116047:role/music-presave-application
   environment:
     CAMPAIGNS_TABLE: ${self:service}-campaigns-${opt:stage, self:provider.stage}
+    CAMPAIGNS_TABLE_INDEX: releaseDateIndex
     SUBSCRIBERS_TABLE: ${self:service}-subscribers-${opt:stage, self:provider.stage}
+    SUBSCRIBERS_TABLE_INDEX: campaignIdIndex
     UPDATE_QUEUE_TABLE: ${self:service}-update-queue-${opt:stage, self:provider.stage}
     SPOTIFY_CLIENT_ID: adc4a99fec564ab19629189544e49c44
     SPOTIFY_CLIENT_SECRET: b98ee2957e874fb99ab17fec2838efcb
+    SPOTIFY_CLIENT_CALLBACK: http://localhost:8080/callback
 
 functions:
   scheduled-job:
     handler: scheduled-jobs/campaigns.query
-    # events:
-      # Invoke Lambda function every minute
-      # - schedule: rate(1 minute)
+    events:
+      - schedule: cron(0 13 * * ? *)
   update-queue:
     handler: update-queue/process.process
+    events:
+      - stream: arn:aws:dynamodb:us-east-1:353948116047:table/streaming-presave-app-update-queue-dev/stream/2017-08-17T07:30:13.411
   create-subscribers:
     handler: subscribers/create.create
     events:
@@ -69,22 +73,39 @@ resources:
       Type: 'AWS::DynamoDB::Table'
       DeletionPolicy: Retain
       Properties:
+        TableName: ${self:provider.environment.CAMPAIGNS_TABLE}
         AttributeDefinitions:
           -
             AttributeName: campaignId
             AttributeType: S
+          -
+            AttributeName: releaseDate
+            AttributeType: N
         KeySchema:
           -
             AttributeName: campaignId
             KeyType: HASH
+          -
+            AttributeName: releaseDate
+            KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
-        TableName: ${self:provider.environment.CAMPAIGNS_TABLE}
+        GlobalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.CAMPAIGNS_TABLE_INDEX}
+            KeySchema:
+              - AttributeName: releaseDate
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5
     SubscribersDynamoDbTable:
       Type: 'AWS::DynamoDB::Table'
       DeletionPolicy: Retain
       Properties:
+        TableName: ${self:provider.environment.SUBSCRIBERS_TABLE}
         AttributeDefinitions:
           -
             AttributeName: subscriberId
@@ -102,11 +123,21 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-        TableName: ${self:provider.environment.SUBSCRIBERS_TABLE}
+        GlobalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.SUBSCRIBERS_TABLE_INDEX}
+            KeySchema:
+              - AttributeName: campaignId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
     UpdateQueueDynamoDbTable:
       Type: 'AWS::DynamoDB::Table'
       DeletionPolicy: Retain
       Properties:
+        TableName: ${self:provider.environment.UPDATE_QUEUE_TABLE}
         AttributeDefinitions:
           -
             AttributeName: subscriberId
@@ -124,4 +155,5 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-        TableName: ${self:provider.environment.UPDATE_QUEUE_TABLE}
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE

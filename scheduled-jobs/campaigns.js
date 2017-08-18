@@ -11,7 +11,7 @@ const $post = Promise.promisify(request.post);
 const spotifyConfig = {
   clientId: process.env.SPOTIFY_CLIENT_ID,
   clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
-  redirectUri: "http://localhost:8080/callback"
+  redirectUri: process.env.SPOTIFY_CLIENT_CALLBACK
 };
 
 module.exports.query = (event, context, callback) => {
@@ -23,7 +23,7 @@ module.exports.query = (event, context, callback) => {
   const fetchCampaignsByReleaseDate = releaseDate => {
     const campaignParams = {
       TableName: process.env.CAMPAIGNS_TABLE,
-      IndexName: "releaseDate-index",
+      IndexName: process.env.CAMPAIGNS_TABLE_INDEX,
       KeyConditionExpression: "#releaseDate = :releaseDate",
       ExpressionAttributeNames: {
         "#releaseDate": "releaseDate"
@@ -41,7 +41,7 @@ module.exports.query = (event, context, callback) => {
   const fetchSubscribers = campaignId => {
     const subscriberParams = {
       TableName: process.env.SUBSCRIBERS_TABLE,
-      IndexName: "campaignId-index",
+      IndexName: process.env.SUBSCRIBERS_TABLE_INDEX,
       KeyConditionExpression: "#campaignId = :campaignId",
       ExpressionAttributeNames: {
         "#campaignId": "campaignId"
@@ -104,17 +104,12 @@ module.exports.query = (event, context, callback) => {
     const timestamp = new Date().getTime();
     const updateParams = {
       TableName: process.env.UPDATE_QUEUE_TABLE,
-      Item: {
+      Item: Object.assign({}, data, {
         updateId: uuid.v1(),
         complete: false,
-        accessToken: data.accessToken,
-        playlistId: data.playlistId,
-        uris: data.uris,
-        campaignId: data.campaignId,
-        subscriberId: data.subscriberId,
         createdAt: timestamp,
         updatedAt: timestamp
-      }
+      })
     };
 
     return dynamoDb.putAsync(updateParams);
@@ -143,15 +138,11 @@ module.exports.query = (event, context, callback) => {
   };
 
   const getSubscriberData = resolvedSubscriber => {
-    const subscriberId = resolvedSubscriber.subscriberId;
     const refreshToken = resolvedSubscriber.refreshToken;
-    const playlistId = resolvedSubscriber.playlistId;
     return fetchAccessToken(refreshToken).then(accessToken => {
-      return {
-        subscriberId: subscriberId,
-        playlistId: playlistId,
+      return Object.assign({}, resolvedSubscriber, {
         accessToken: accessToken
-      };
+      });
     });
   };
 

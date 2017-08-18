@@ -13,7 +13,8 @@ module.exports.create = (event, context, callback) => {
     typeof data.refreshToken === "undefined" ||
     typeof data.campaignId === "undefined" ||
     typeof data.playlistId === "undefined" ||
-    typeof data.email === "undefined"
+    typeof data.email === "undefined" ||
+    typeof data.spotifyId === "undefined"
   ) {
     console.error("Validation Failed");
     callback(new Error("Couldn't update subscriber."));
@@ -28,6 +29,7 @@ module.exports.create = (event, context, callback) => {
       campaignId: data.campaignId,
       playlistId: data.playlistId,
       email: data.email,
+      spotifyId: data.spotifyId,
       createdAt: timestamp,
       updatedAt: timestamp
     }

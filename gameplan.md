@@ -76,8 +76,8 @@ sample api requests
 
 create campaign
 
-curl -X POST https://hmzkhgrq1e.execute-api.us-east-1.amazonaws.com/dev/campaigns --data '{ "refreshToken" : "AQCzCkSGsXBxgqW4mSjNU9B9CO9GjUoLb0bD55hJbKSOUdm_sdfCo1_YayP5LoI_tCKDrXXC20nlY3gNSs7Nw5u8dqMX9E5A1jgVggOQmFWgK8xotCLxByBmVTvUTNKD3H0", "artistId": "6ldZGvFDjs6KafLouTBHJ9", "releaseDate" : 1502675792993}'
+curl -X POST https://qj36revp97.execute-api.us-east-1.amazonaws.com/dev/campaigns --data '{ "refreshToken" : "AQCzCkSGsXBxgqW4mSjNU9B9CO9GjUoLb0bD55hJbKSOUdm_sdfCo1_YayP5LoI_tCKDrXXC20nlY3gNSs7Nw5u8dqMX9E5A1jgVggOQmFWgK8xotCLxByBmVTvUTNKD3H0", "artistId": "6ldZGvFDjs6KafLouTBHJ9", "releaseDate" : 1503014400000}'
 
 create subscriber
 
-curl -X POST https://hmzkhgrq1e.execute-api.us-east-1.amazonaws.com/dev/subscribers --data '{ "campaignId" : "0ca6a320-80b6-11e7-bf9f-bf53d980c881", "refreshToken" : "AQCzCkSGsXBxgqW4mSjNU9B9CO9GjUoLb0bD55hJbKSOUdm_sdfCo1_YayP5LoI_tCKDrXXC20nlY3gNSs7Nw5u8dqMX9E5A1jgVggOQmFWgK8xotCLxByBmVTvUTNKD3H0", "playlistId": "6sM5NRcuAVVLyVWXbEFG40", "email" : "elliott.sencan-11@sandiego.edu"}'
+curl -X POST https://qj36revp97.execute-api.us-east-1.amazonaws.com/dev/subscribers --data '{ "campaignId" : "375fcea0-831f-11e7-9cb8-1566929c38de", "refreshToken" : "AQBcMrs217cSNZKhFhjJ1C7G8yvFeUK0G1ufPE1oO-d-WTvFr8k3-LT4NoeQTLPc8beWnZlwzaJGVGFxZB3vF6WNXKe_7lGODBoOdUB1p9Us8blu2t9YGaHYtM93OyFTQus", "playlistId": "6S3ef71UbM9Uvsmz8bfDdt", "email" : "hollywoodprinciple@gmail.com", "spotifyId" : "hollywoodprinciple"}'
