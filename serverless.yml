@@ -8,30 +8,16 @@ provider:
   role: arn:aws:iam::353948116047:role/music-presave-application
   environment:
     CAMPAIGNS_TABLE: ${self:service}-campaigns-${opt:stage, self:provider.stage}
-    CAMPAIGNS_TABLE_INDEX: releaseDateIndex
+    RELEASE_DATA_TABLE: ${self:service}-release-data-${opt:stage, self:provider.stage}
     SUBSCRIBERS_TABLE: ${self:service}-subscribers-${opt:stage, self:provider.stage}
     SUBSCRIBERS_TABLE_INDEX: campaignIdIndex
     UPDATE_QUEUE_TABLE: ${self:service}-update-queue-${opt:stage, self:provider.stage}
+    SPOTIFY_TRANSACTION_HISTORY_TABLE: ${self:service}-spotify-transaction-history-${opt:stage, self:provider.stage}
     SPOTIFY_CLIENT_ID: adc4a99fec564ab19629189544e49c44
     SPOTIFY_CLIENT_SECRET: b98ee2957e874fb99ab17fec2838efcb
     SPOTIFY_CLIENT_CALLBACK: http://localhost:8080/callback
 
 functions:
-  scheduled-job:
-    handler: scheduled-jobs/campaigns.query
-    events:
-      - schedule: cron(0 13 * * ? *)
-  update-queue:
-    handler: update-queue/process.process
-    events:
-      - stream: arn:aws:dynamodb:us-east-1:353948116047:table/streaming-presave-app-update-queue-dev/stream/2017-08-17T07:30:13.411
-  create-subscribers:
-    handler: subscribers/create.create
-    events:
-      - http:
-          path: subscribers
-          method: post
-          cors: true
   create-campaign:
     handler: campaigns/create.create
     events:
@@ -39,18 +25,25 @@ functions:
           path: campaigns
           method: post
           cors: true
-  list-campaign:
-    handler: campaigns/list.list
+  delete-campaign:
+    handler: campaigns/delete.delete
     events:
       - http:
-          path: campaigns
-          method: get
+          path: campaigns/{campaignId}
+          method: delete
           cors: true
   get-campaign:
     handler: campaigns/get.get
     events:
       - http:
           path: campaigns/{campaignId}
+          method: get
+          cors: true
+  list-campaign:
+    handler: campaigns/list.list
+    events:
+      - http:
+          path: campaigns
           method: get
           cors: true
   update-campaign:
@@ -60,13 +53,25 @@ functions:
           path: campaigns/{campaignId}
           method: put
           cors: true
-  delete-campaign:
-    handler: campaigns/delete.delete
+  release-data-create:
+    handler: release-data/create.create
+    events:
+      - stream: arn:aws:dynamodb:us-east-1:353948116047:table/streaming-presave-app-campaigns-dev/stream/2017-08-21T06:25:26.656
+  release-data-scheduled:
+    handler: release-data/scheduled.scheduled
+    # events:
+    #   - schedule: cron(0 13 * * ? *)
+  create-subscribers:
+    handler: subscribers/create.create
     events:
       - http:
-          path: campaigns/{campaignId}
-          method: delete
+          path: subscribers
+          method: post
           cors: true
+  update-queue:
+    handler: update-queue/process.process
+    events:
+      - stream: arn:aws:dynamodb:us-east-1:353948116047:table/streaming-presave-app-update-queue-dev/stream/2017-08-21T06:25:26.965
 resources:
   Resources:
     CampaignsDynamoDbTable:
@@ -78,29 +83,31 @@ resources:
           -
             AttributeName: campaignId
             AttributeType: S
-          -
-            AttributeName: releaseDate
-            AttributeType: N
         KeySchema:
           -
             AttributeName: campaignId
             KeyType: HASH
-          -
-            AttributeName: releaseDate
-            KeyType: RANGE
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
-        GlobalSecondaryIndexes:
-          - IndexName: ${self:provider.environment.CAMPAIGNS_TABLE_INDEX}
-            KeySchema:
-              - AttributeName: releaseDate
-                KeyType: HASH
-            Projection:
-              ProjectionType: ALL
-            ProvisionedThroughput:
-              ReadCapacityUnits: 5
-              WriteCapacityUnits: 5
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
+    ReleaseDataDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.RELEASE_DATA_TABLE}
+        AttributeDefinitions:
+          -
+            AttributeName: campaignId
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: campaignId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
     SubscribersDynamoDbTable:
       Type: 'AWS::DynamoDB::Table'
       DeletionPolicy: Retain
@@ -133,6 +140,8 @@ resources:
             ProvisionedThroughput:
               ReadCapacityUnits: 1
               WriteCapacityUnits: 1
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
     UpdateQueueDynamoDbTable:
       Type: 'AWS::DynamoDB::Table'
       DeletionPolicy: Retain
@@ -152,6 +161,24 @@ resources:
           -
             AttributeName: campaignId
             KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
+    SpotifyTransactionHistoryDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.SPOTIFY_TRANSACTION_HISTORY_TABLE}
+        AttributeDefinitions:
+          -
+            AttributeName: timestamp
+            AttributeType: N
+        KeySchema:
+          -
+            AttributeName: timestamp
+            KeyType: HASH
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1

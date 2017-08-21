@@ -1,19 +1,32 @@
 authorize from spotify
 create campaign
--- campaign id (refresh token)
--- artist id
--- release date key (normalized to beginning of day in milliseconds)
+-- campaignId
+-- refreshToken
+-- artistId
+-- createdAt
+-- updatedAt
+triggers create releaseData record
+
+create releaseData
+-- campaignId
+-- refreshToken
+-- releases
+-- uris (csv);
+
 subscribers added through api
+-- campaign id
 -- refresh token
+-- email
 -- playlist id
+-- artist id
 -- email
 triggers subscriber email push to mailchimp
 
 cron job
--- query all release records by beginning of day
--- get all matching campaigns
+-- query all campaigns
 -- refresh spotify token
--- grab most recent album
+-- fetch albums from spotify, store in ArtistsReleasesByCampaign
+-- if fetched album count is larger then stored count, update count, push to queue
 
 update queue
 - subscriber refresh token
@@ -76,8 +89,12 @@ sample api requests
 
 create campaign
 
-curl -X POST https://qj36revp97.execute-api.us-east-1.amazonaws.com/dev/campaigns --data '{ "refreshToken" : "AQCzCkSGsXBxgqW4mSjNU9B9CO9GjUoLb0bD55hJbKSOUdm_sdfCo1_YayP5LoI_tCKDrXXC20nlY3gNSs7Nw5u8dqMX9E5A1jgVggOQmFWgK8xotCLxByBmVTvUTNKD3H0", "artistId": "6ldZGvFDjs6KafLouTBHJ9", "releaseDate" : 1503014400000}'
+curl -X POST https://jd5p2c5j3l.execute-api.us-east-1.amazonaws.com/dev/campaigns --data '{ "refreshToken" : "AQCzCkSGsXBxgqW4mSjNU9B9CO9GjUoLb0bD55hJbKSOUdm_sdfCo1_YayP5LoI_tCKDrXXC20nlY3gNSs7Nw5u8dqMX9E5A1jgVggOQmFWgK8xotCLxByBmVTvUTNKD3H0", "artistId": "6ldZGvFDjs6KafLouTBHJ9"}'
 
 create subscriber
 
-curl -X POST https://qj36revp97.execute-api.us-east-1.amazonaws.com/dev/subscribers --data '{ "campaignId" : "375fcea0-831f-11e7-9cb8-1566929c38de", "refreshToken" : "AQBcMrs217cSNZKhFhjJ1C7G8yvFeUK0G1ufPE1oO-d-WTvFr8k3-LT4NoeQTLPc8beWnZlwzaJGVGFxZB3vF6WNXKe_7lGODBoOdUB1p9Us8blu2t9YGaHYtM93OyFTQus", "playlistId": "6S3ef71UbM9Uvsmz8bfDdt", "email" : "hollywoodprinciple@gmail.com", "spotifyId" : "hollywoodprinciple"}'
+curl -X POST https://jd5p2c5j3l.execute-api.us-east-1.amazonaws.com/dev/subscribers --data '{ "campaignId" : "f84ea150-8639-11e7-a002-8160354d4e4d", "refreshToken" : "AQBcMrs217cSNZKhFhjJ1C7G8yvFeUK0G1ufPE1oO-d-WTvFr8k3-LT4NoeQTLPc8beWnZlwzaJGVGFxZB3vF6WNXKe_7lGODBoOdUB1p9Us8blu2t9YGaHYtM93OyFTQus", "playlistId": "6S3ef71UbM9Uvsmz8bfDdt", "email" : "hollywoodprinciple@gmail.com", "spotifyId" : "hollywoodprinciple"}'
+
+
+delete campaign
+curl -X DELETE https://jd5p2c5j3l.execute-api.us-east-1.amazonaws.com/dev/campaigns/73043ff0-856c-11e7-b962-3f86dcc2d005
