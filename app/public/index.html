@@ -1,0 +1,249 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>FanPresave.com | Spotify</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+  <style type="text/css">
+    /* Space out content a bit */
+
+    body {
+      padding-top: 1.5rem;
+      padding-bottom: 1.5rem;
+    }
+    /* Everything but the jumbotron gets side spacing for mobile first views */
+
+    .header,
+    .marketing,
+    .footer {
+      padding-right: 1rem;
+      padding-left: 1rem;
+    }
+    /* Custom page header */
+
+    .header {
+      padding-bottom: 1rem;
+      border-bottom: .05rem solid #e5e5e5;
+    }
+    /* Make the masthead heading the same height as the navigation */
+
+    .header h3 {
+      margin-top: 0;
+      margin-bottom: 0;
+      line-height: 3rem;
+    }
+    /* Custom page footer */
+
+    .footer {
+      padding-top: 1.5rem;
+      color: #777;
+      border-top: .05rem solid #e5e5e5;
+    }
+    /* Customize container */
+
+    @media (min-width: 48em) {
+      .container {
+        max-width: 46rem;
+      }
+    }
+
+    .container-narrow>hr {
+      margin: 2rem 0;
+    }
+    /* Main marketing message and sign up button */
+
+    .jumbotron {
+      text-align: center;
+      background: white;
+      padding: 45px;
+    }
+
+    .jumbotron .btn {
+      padding: .75rem 1.5rem;
+      font-size: 1.5rem;
+    }
+    /* Supporting marketing content */
+
+    .marketing {
+      margin: 3rem 0;
+    }
+
+    .marketing p+h4 {
+      margin-top: 1.5rem;
+    }
+    /* Responsive: Portrait tablets and up */
+
+    @media screen and (min-width: 48em) {
+      /* Remove the padding we set earlier */
+      .header,
+      .marketing,
+      .footer {
+        padding-right: 0;
+        padding-left: 0;
+      }
+      /* Space out the masthead */
+      .header {
+        margin-bottom: 2rem;
+      }
+      /* Remove the bottom border on the jumbotron for visual effect */
+      .jumbotron {
+        border-bottom: 0;
+      }
+    }
+
+    p.or-text {
+      padding: 25px;
+      position: relative;
+      margin: 0;
+    }
+
+    p.or-text:before {
+      content: "";
+      height: 1px;
+      background: #868e96!important;
+      width: 45%;
+      position: absolute;
+      left: 0;
+      top: 50%;
+    }
+
+    p.or-text:after {
+      content: "";
+      height: 1px;
+      background: #868e96!important;
+      width: 45%;
+      position: absolute;
+      right: 0;
+      top: 50%;
+    }
+
+    div.headline {
+      padding: 20px 20px 40px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header clearfix text-center">
+    <h3 class="text-muted">Presave</h3>
+  </div>
+  <div id="login" style="display:none;">
+    <h1>This is an example of the Authorization Code flow</h1>
+    <a href="https://accounts.spotify.com/authorize?client_id=adc4a99fec564ab19629189544e49c44&response_type=code&redirect_uri=http://localhost:8888/&scope=user-read-private%20user-read-email%20playlist-modify-public%20playlist-modify-private&state=f84ea150-8639-11e7-a002-8160354d4e4d" class="btn btn-primary">Log in with Spotify</a>
+  </div>
+  <div id="loggedin" class="container" style="display:none;">
+
+    <div class="row marketing">
+      <div class="col-md-12 text-center headline">
+        <h4>Welcome!</h4>
+        <p>Now, pick a playlist or create a new one</p>
+      </div>
+
+      <form id="addToPlaylist" class="col-md-12">
+        <div class="form-group">
+          <label for="userPlaylists" class="sr-only">Playlist</label>
+          <select class="form-control" id="userPlaylistsPlaceholder"></select>
+        </div>
+        <button type="submit" class="btn btn-success btn-block">Add to Playlist</button>
+      </form>
+      <!-- <div class="text-center col-md-12">
+        <p class="or-text text-muted">or</p>
+      </div>
+      <div class="col-md-12">
+        <button type="submit" class="btn btn-success btn-block">Create New Playlist</button>
+      </div> -->
+    </div>
+  </div>
+
+  <div id="success" class="jumbotron" style="display:none;">
+    <h2 class="display-3">Success!</h2>
+    <p class="lead">We've successsfully presaved to your spotify account.</p>
+    <p><a class="btn btn-default" href="#" role="button" id="closeWindow">Close this window</a></p>
+  </div>
+
+  <footer class="fixed-bottom footer text-center">
+    <p>© Fanpresave.com 2017</p>
+  </footer>
+  <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
+  <script>
+    (function() {
+      /**
+       * Obtains parameters from the hash of the URL
+       * @return Object
+       */
+      function getHashParams() {
+        var hashParams = {};
+        var e, r = /([^&;=]+)=?([^&;]*)/g,
+          q = window.location.search.substring(1);
+        while (e = r.exec(q)) {
+          hashParams[e[1]] = decodeURIComponent(e[2]);
+        }
+        return hashParams;
+      }
+
+      var params = getHashParams();
+
+      var code = params.code,
+        campaign_id = params.state,
+        error = params.error;
+
+      if (error) {
+        alert('There was an error during the authentication');
+      } else {
+        // if
+        if (code) {
+          $('#loggedin').show();
+          $('#login').hide();
+          $('#success').hide();
+          $.ajax({
+            url: 'https://pz260bs2ok.execute-api.us-east-1.amazonaws.com/dev/callback/' + code
+          }).then(function(response) {
+            debugger;
+            $.ajax({
+              url: 'https://api.spotify.com/v1/me',
+              headers: {
+                'Authorization': 'Bearer ' + access_token
+              }
+            }).then(function(response) {
+              $.ajax({
+                url: "https://api.spotify.com/v1/users/" + response.id + "/playlists",
+                headers: {
+                  'Authorization': 'Bearer ' + access_token
+                }
+              }).then(function(response) {
+                var playlistTemplate = response.items.map(formatOptionsTemplate);
+                playlistTemplate.unshift('<select class="form-control" id="userPlaylists">');
+                playlistTemplate.push('</select');
+                document.getElementById("userPlaylistsPlaceholder").innerHTML = playlistTemplate.join("");
+              });
+            });
+          });
+        } else {
+          // render initial screen
+          $('#login').show();
+          $('#loggedin').hide();
+          $('#success').hide();
+        }
+      }
+
+      function formatOptionsTemplate(item) {
+        return "<option value=" + item.id + ">" + item.name + "</option>"
+      }
+
+      function addToPlaylist(evt) {
+        evt.preventDefault();
+        $('#login').hide();
+        $('#loggedin').hide();
+        $('#success').show();
+      }
+
+      $('#addToPlaylist').on('submit', addToPlaylist);
+
+      $("#closeWindow").on('click', function() {
+        window.close();
+      });
+    })();
+  </script>
+</body>
+
+</html>

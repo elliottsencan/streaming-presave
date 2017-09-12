@@ -89,7 +89,10 @@ sample api requests
 
 create campaign
 
-curl -X POST https://jd5p2c5j3l.execute-api.us-east-1.amazonaws.com/dev/campaigns --data '{ "refreshToken" : "AQCzCkSGsXBxgqW4mSjNU9B9CO9GjUoLb0bD55hJbKSOUdm_sdfCo1_YayP5LoI_tCKDrXXC20nlY3gNSs7Nw5u8dqMX9E5A1jgVggOQmFWgK8xotCLxByBmVTvUTNKD3H0", "artistId": "6ldZGvFDjs6KafLouTBHJ9"}'
+
+
+curl -X POST https://jd5p2c5j3l.execute-api.us-east-1.amazonaws.com/dev/campaigns --data '{ "refreshToken" :
+curl -X POST https://pz260bs2ok.execute-api.us-east-1.amazonaws.com/dev/campaigns --data '{ "refreshToken" : "AQCzCkSGsXBxgqW4mSjNU9B9CO9GjUoLb0bD55hJbKSOUdm_sdfCo1_YayP5LoI_tCKDrXXC20nlY3gNSs7Nw5u8dqMX9E5A1jgVggOQmFWgK8xotCLxByBmVTvUTNKD3H0", "artistId": "6ldZGvFDjs6KafLouTBHJ9"}'
 
 create subscriber
 
