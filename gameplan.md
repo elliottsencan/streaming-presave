@@ -92,11 +92,11 @@ create campaign
 
 
 curl -X POST https://jd5p2c5j3l.execute-api.us-east-1.amazonaws.com/dev/campaigns --data '{ "refreshToken" :
-curl -X POST https://pz260bs2ok.execute-api.us-east-1.amazonaws.com/dev/campaigns --data '{ "refreshToken" : "AQCzCkSGsXBxgqW4mSjNU9B9CO9GjUoLb0bD55hJbKSOUdm_sdfCo1_YayP5LoI_tCKDrXXC20nlY3gNSs7Nw5u8dqMX9E5A1jgVggOQmFWgK8xotCLxByBmVTvUTNKD3H0", "artistId": "6ldZGvFDjs6KafLouTBHJ9"}'
+curl -X POST https://wz4byxcjy3.execute-api.us-east-1.amazonaws.com/dev/campaigns --data '{ "refreshToken" : "AQCzCkSGsXBxgqW4mSjNU9B9CO9GjUoLb0bD55hJbKSOUdm_sdfCo1_YayP5LoI_tCKDrXXC20nlY3gNSs7Nw5u8dqMX9E5A1jgVggOQmFWgK8xotCLxByBmVTvUTNKD3H0", "artistId": "6ldZGvFDjs6KafLouTBHJ9"}'
 
 create subscriber
 
-curl -X POST https://jd5p2c5j3l.execute-api.us-east-1.amazonaws.com/dev/subscribers --data '{ "campaignId" : "f84ea150-8639-11e7-a002-8160354d4e4d", "refreshToken" : "AQBcMrs217cSNZKhFhjJ1C7G8yvFeUK0G1ufPE1oO-d-WTvFr8k3-LT4NoeQTLPc8beWnZlwzaJGVGFxZB3vF6WNXKe_7lGODBoOdUB1p9Us8blu2t9YGaHYtM93OyFTQus", "playlistId": "6S3ef71UbM9Uvsmz8bfDdt", "email" : "hollywoodprinciple@gmail.com", "spotifyId" : "hollywoodprinciple"}'
+curl -X POST https://wz4byxcjy3.execute-api.us-east-1.amazonaws.com/dev/subscribers --data '{ "campaignId" : "ebf7c070-99cc-11e7-92c5-13966effe53b", "refreshToken" : "AQBcMrs217cSNZKhFhjJ1C7G8yvFeUK0G1ufPE1oO-d-WTvFr8k3-LT4NoeQTLPc8beWnZlwzaJGVGFxZB3vF6WNXKe_7lGODBoOdUB1p9Us8blu2t9YGaHYtM93OyFTQus", "playlistId": "6S3ef71UbM9Uvsmz8bfDdt", "email" : "hollywoodprinciple@gmail.com", "spotifyId" : "hollywoodprinciple"}'
 
 
 delete campaign

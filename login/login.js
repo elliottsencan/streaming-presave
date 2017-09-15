@@ -6,6 +6,7 @@ module.exports.login = (event, context, callback) => {
   '&scope=user-read-private%20user-read-email%20playlist-modify-public%20playlist-modify-private&state=' + event.pathParameters.campaignId;
     const response = {
       statusCode: 200,
+      headers: { 'Access-Control-Allow-Origin': '*' },
       body: url
     };
 

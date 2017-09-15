@@ -1,5 +1,5 @@
 {
-  "name": "spotify-presave-campaign-api",
+  "name": "fanpresave-app",
   "version": "1.0.0",
   "description": "Serverless CRUD service for managing spotify presave campaigns",
   "author": "",

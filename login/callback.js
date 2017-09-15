@@ -23,6 +23,7 @@ module.exports.callback = (event, context, callback) => {
     console.log(data);
     const response = {
       statusCode: 200,
+      headers: { 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify(data.body)
     };
 

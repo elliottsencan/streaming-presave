@@ -1,4 +1,4 @@
-service: fan-presave-app
+service: fan-presave
 
 frameworkVersion: ">=1.1.0 <2.0.0"
 
@@ -15,8 +15,7 @@ provider:
     SPOTIFY_TRANSACTION_HISTORY_TABLE: ${self:service}-spotify-transaction-history-${opt:stage, self:provider.stage}
     SPOTIFY_CLIENT_ID: adc4a99fec564ab19629189544e49c44
     SPOTIFY_CLIENT_SECRET: b98ee2957e874fb99ab17fec2838efcb
-    SPOTIFY_CLIENT_CALLBACK: http://localhost:8888/
-    # SPOTIFY_CLIENT_CALLBACK: https://s3.amazonaws.com/fan-presave-app-static/index.html
+    SPOTIFY_CLIENT_CALLBACK: http://static.fanpresave.com/
 
 functions:
   login:
@@ -70,8 +69,8 @@ functions:
           cors: true
   release-data-create:
     handler: release-data/create.create
-    events:
-      - stream: arn:aws:dynamodb:us-east-1:353948116047:table/fan-presave-app-campaigns-dev/stream/2017-09-10T00:41:18.689
+    # events:
+    #   - stream: arn:aws:dynamodb:us-east-1:353948116047:table/fan-presave-campaigns-dev/stream/2017-09-13T17:41:03.640
   release-data-scheduled:
     handler: release-data/scheduled.scheduled
     events:
@@ -85,8 +84,8 @@ functions:
           cors: true
   update-queue:
     handler: update-queue/process.process
-    events:
-      - stream: arn:aws:dynamodb:us-east-1:353948116047:table/fan-presave-app-update-queue-dev/stream/2017-09-10T00:41:18.263
+    # events:
+    #   - stream: arn:aws:dynamodb:us-east-1:353948116047:table/fan-presave-update-queue-dev/stream/2017-09-13T17:41:03.669
 resources:
   Resources:
     CampaignsDynamoDbTable:

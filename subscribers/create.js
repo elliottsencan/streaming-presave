@@ -6,6 +6,7 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 module.exports.create = (event, context, callback) => {
   const timestamp = new Date().getTime();
+  console.log(event.body);
   const data = JSON.parse(event.body);
 
   // validation
@@ -13,7 +14,6 @@ module.exports.create = (event, context, callback) => {
     typeof data.refreshToken === "undefined" ||
     typeof data.campaignId === "undefined" ||
     typeof data.playlistId === "undefined" ||
-    typeof data.email === "undefined" ||
     typeof data.spotifyId === "undefined"
   ) {
     console.error("Validation Failed");
@@ -47,6 +47,12 @@ module.exports.create = (event, context, callback) => {
     // create a response
     const response = {
       statusCode: 200,
+      headers: {
+        "X-Requested-With": '*',
+        "Access-Control-Allow-Headers": 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,x-requested-with',
+        "Access-Control-Allow-Origin": '*',
+        "Access-Control-Allow-Methods": 'POST,GET,OPTIONS'
+      },
       body: JSON.stringify(params.Item)
     };
     callback(null, response);

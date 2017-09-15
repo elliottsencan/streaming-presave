@@ -125,11 +125,12 @@
 
 <body>
   <div class="header clearfix text-center">
-    <h3 class="text-muted">Presave</h3>
+    <h3 class="text-muted">Fanpresave.com</h3>
   </div>
   <div id="login" style="display:none;">
     <h1>This is an example of the Authorization Code flow</h1>
-    <a href="https://accounts.spotify.com/authorize?client_id=adc4a99fec564ab19629189544e49c44&response_type=code&redirect_uri=http://localhost:8888/&scope=user-read-private%20user-read-email%20playlist-modify-public%20playlist-modify-private&state=f84ea150-8639-11e7-a002-8160354d4e4d" class="btn btn-primary">Log in with Spotify</a>
+    <a href="https://accounts.spotify.com/authorize?client_id=adc4a99fec564ab19629189544e49c44&response_type=code&redirect_uri=http://static.fanpresave.com/&scope=user-read-private%20user-read-email%20playlist-modify-public%20playlist-modify-private&state=67d09880-95c1-11e7-b23c-6f50c5cc5230"
+      class="btn btn-primary">Log in with Spotify</a>
   </div>
   <div id="loggedin" class="container" style="display:none;">
 
@@ -146,12 +147,21 @@
         </div>
         <button type="submit" class="btn btn-success btn-block">Add to Playlist</button>
       </form>
+
       <!-- <div class="text-center col-md-12">
         <p class="or-text text-muted">or</p>
       </div>
       <div class="col-md-12">
         <button type="submit" class="btn btn-success btn-block">Create New Playlist</button>
       </div> -->
+    </div>
+    <div class="col-md-12">
+      <div class="form-check col-md-12">
+        <label class="form-check-label">
+        <input class="form-check-input" type="checkbox" value="" checked="">
+        Notify me via email when added to my library
+      </label>
+      </div>
     </div>
   </div>
 
@@ -183,7 +193,10 @@
 
       var params = getHashParams();
 
-      var code = params.code,
+      var access_token,
+        refresh_token,
+        email,
+        code = params.code,
         campaign_id = params.state,
         error = params.error;
 
@@ -196,15 +209,19 @@
           $('#login').hide();
           $('#success').hide();
           $.ajax({
-            url: 'https://pz260bs2ok.execute-api.us-east-1.amazonaws.com/dev/callback/' + code
+            crossDomain: true,
+            url: 'https://www.fanpresave.com/api/callback/' + code
           }).then(function(response) {
-            debugger;
+            access_token = response.access_token;
+            refresh_token = response.refresh_token;
             $.ajax({
               url: 'https://api.spotify.com/v1/me',
               headers: {
                 'Authorization': 'Bearer ' + access_token
               }
             }).then(function(response) {
+              email = response.email;
+              spotify_id = response.id;
               $.ajax({
                 url: "https://api.spotify.com/v1/users/" + response.id + "/playlists",
                 headers: {
@@ -232,9 +249,23 @@
 
       function addToPlaylist(evt) {
         evt.preventDefault();
-        $('#login').hide();
-        $('#loggedin').hide();
-        $('#success').show();
+
+        jQuery.ajax({
+          crossDomain: true,
+          type: "POST",
+          url: 'https://www.fanpresave.com/api/subscribers',
+          data: JSON.stringify({
+            "campaignId": campaign_id,
+            "refreshToken": refresh_token,
+            "playlistId": $('#userPlaylistsPlaceholder').val(),
+            "email": email,
+            "spotifyId": spotify_id
+          })
+        }).then(function(response) {
+          $('#login').hide();
+          $('#loggedin').hide();
+          $('#success').show();
+        });
       }
 
       $('#addToPlaylist').on('submit', addToPlaylist);
