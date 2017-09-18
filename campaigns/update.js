@@ -6,10 +6,12 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
 module.exports.update = (event, context, callback) => {
   const timestamp = new Date().getTime();
   const data = JSON.parse(event.body);
+  
   // validation
   if (
-    typeof releaseDate === "undefined" ||
-    typeof artistId === "undefined"
+    typeof data.artistId === "undefined" ||
+    typeof data.artistName === "undefined" ||
+    typeof data.callback === "undefined"
   ) {
     console.error("Validation Failed");
     callback(new Error("Couldn't update the campaign."));
@@ -22,11 +24,13 @@ module.exports.update = (event, context, callback) => {
       campaignId: event.pathParameters.campaignId
     },
     ExpressionAttributeValues: {
-      ":artistId": artistId,
+      ":artistName": data.artistName,
+      ":callback": data.callback,
+      ":artistId": data.artistId,
       ":updatedAt": timestamp
     },
     UpdateExpression:
-      "SET artistId = :artistId, updatedAt = :updatedAt",
+      "SET artistId = :artistId, updatedAt = :updatedAt, artistName = :artistName, callback = :callback",
     ReturnValues: "ALL_NEW"
   };
 

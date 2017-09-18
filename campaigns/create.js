@@ -8,7 +8,8 @@ module.exports.create = (event, context, callback) => {
   const data = JSON.parse(event.body);
   if (
     typeof data.refreshToken !== "string" ||
-    typeof data.artistId !== "string"
+    typeof data.artistId !== "string" ||
+    typeof data.artistName !== "string"
   ) {
     console.error("Validation Failed");
     callback(new Error("Couldn't create campaign."));
@@ -21,6 +22,8 @@ module.exports.create = (event, context, callback) => {
       campaignId: uuid.v1(),
       refreshToken : data.refreshToken,
       artistId: data.artistId,
+      artistName: data.artistName,
+      callback: data.callback,
       createdAt: timestamp,
       updatedAt: timestamp
     }
