@@ -15,18 +15,18 @@ provider:
     SPOTIFY_TRANSACTION_HISTORY_TABLE: ${self:service}-spotify-transaction-history-${opt:stage, self:provider.stage}
     SPOTIFY_CLIENT_ID: adc4a99fec564ab19629189544e49c44
     SPOTIFY_CLIENT_SECRET: b98ee2957e874fb99ab17fec2838efcb
-    SPOTIFY_CLIENT_CALLBACK: http://static.fanpresave.com/
+    SPOTIFY_CLIENT_CALLBACK: http://www.fanpresave.com/success/
 
 functions:
   login:
-    handler: login/login.login
+    handler: callback/login.login
     events:
       - http:
           path: login/{campaignId}
           method: get
           cors: true
   callback:
-    handler: login/callback.callback
+    handler: callback/callback.callback
     events:
       - http:
           path: callback/{code}

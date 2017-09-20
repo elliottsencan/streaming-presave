@@ -12,13 +12,6 @@ const spotifyConfig = {
   redirectUri: process.env.SPOTIFY_CLIENT_CALLBACK
 };
 
-const dummyFetchedReleaseData = {
-  uris:
-    "spotify:track:01il5YrqZZiptglvAmcMrW,spotify:track:6kx9Z1R1tm4DZM6iKy6GcV,spotify:track:4dhqPvTeRDnti751EXPznk,spotify:track:1C3pyT8S8fkaI91khmTjcF,spotify:track:3xQERbgJrsDgSNHOz9QN97,spotify:track:7fODRVWDnKd8CGfA1CE2Hy,spotify:track:39J85VXiDVmiaBTgdWW0rz,spotify:track:4e7HDxhRYhKM3vZoxJ81V9,spotify:track:2oFxAr34RMq9C08dI2t8Je,spotify:track:3BpZBfCyGLi0xwW1CXk4R2,spotify:track:10XSzgwtOeg2cn0c2UBvHw,spotify:track:7EN2Bj4QIOUN7jbt30bqaT,spotify:track:3ovUC1otltR64PMTj8kaVV,spotify:track:5ceNBjsHTaLoJxUIfZ8ubg,spotify:track:0WNvsaTpzrInZGxnSNHeQI,spotify:track:0eQ8g6xef1I8qtUZauezIR,spotify:track:06IVT9yqDiB70tCwzPe7qs,spotify:track:1TCWucX5mKFWd1Z43qQAWD,spotify:track:1DKYM39oWTI79juSruYM3r,spotify:track:2j7WFfLoM12mfvvKoSp7FZ,spotify:track:0akvD9y8NSgYiYSRSu3y1B,spotify:track:51dbbhs2gcXJSIvILIYCbm,spotify:track:0sRleWntQ5MZjemMZ2UauH,spotify:track:5jwKzpF7HtMwLmqBORKjZy,spotify:track:3gyCdQfiaXuJoUhIsuWISp,spotify:track:1ByQCDDB16FDsNbvNL8dlM,spotify:track:2l7M5px0P631NiGO2fQ9wF,spotify:track:6tFwEEnMrmdAqeotTbpHuO,spotify:track:5Yc037C8ERfOaYkiYV8kUt,spotify:track:2aBc43ob5athlXVWnHz477,spotify:track:7iIaqMJgoXohyND7RfIOdN,spotify:track:5oYzXxKof6mkdCX6lsvgGJ,spotify:track:3wW8Pog5y4zG7g6KkSOG5h,spotify:track:0vCNA91jB2WzDOxJkxEvIf,spotify:track:6Z0LrMp5HXGawA4WKIPnFI,spotify:track:5IF9uO7iFNZanDLzr2dpvC,spotify:track:0rf5aGnwnGe77fh2MbCQeK,spotify:track:5UO4jjoVN7oqc52W4JjSfI",
-  releases:
-    "spotify:album:7rcNekIxuK4G6jyPt55a2U,2jnwx610OS3WXbtHFQwgiK,6zJ7dE0pQz8JGFIlG3fquu,3nadqCHaRsAaUQ47lKMeYP,3Gy6ObDHGHLrLOB0Rvf5qb,4Hy04BdJNVhdqnpY69Jso4,4KxPQ4m5n51DEYEOeehKko,0WQZ5iyDxEG9HDSAsXn2HG,5k1wh9VIgo6JWsW48CRS28,1d9JYhyNtfqevmM2JDSxPt,2PGeNYKwJPCfImBFA1CcC8,1gCyUyQvqDEJOjo18WdE5I,6XL0i4TCp2D1zDT4EbCCOO"
-};
-
 const insertSpotifyTransactionHistoryRecord = message => {
   const timestamp = new Date().getTime();
   const updateParams = {
@@ -250,8 +243,7 @@ module.exports.scheduled = (event, context, callback) => {
         console.log("release data diff ", JSON.stringify(releaseDataDiff));
         const campaignId = releaseDataDiff[0];
         const storedReleaseData = releaseDataDiff[1];
-        // const fetchedReleaseData = releaseDataDiff[2];
-        const fetchedReleaseData = dummyFetchedReleaseData;
+        const fetchedReleaseData = releaseDataDiff[2];
         const storedReleasesUris = storedReleaseData.uris.split(",");
         const fetchedReleaseUris = fetchedReleaseData.uris.split(",");
         console.log('storedReleaseUris count', storedReleasesUris.length);

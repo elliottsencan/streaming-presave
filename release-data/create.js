@@ -136,11 +136,13 @@ module.exports.create = (event, context, callback) => {
     console.log("creating release data record from " + record);
     const campaignId = record.dynamodb.NewImage.campaignId.S;
     const artistId = record.dynamodb.NewImage.artistId.S;
+    const artistName = record.dynamodb.NewImage.artistId.S;
     const refreshToken = record.dynamodb.NewImage.refreshToken.S;
     if (
-      typeof campaignId === "undefined" ||
+      typeof refreshToken === "undefined" ||
       typeof artistId === "undefined" ||
-      typeof refreshToken === "undefined"
+      typeof artistName === "undefined" ||
+      typeof campaignId === "undefined"
     ) {
       console.error("Validation Failed");
       callback(new Error("Couldn't create release data entry."));
@@ -153,9 +155,10 @@ module.exports.create = (event, context, callback) => {
       const updateParams = {
         TableName: process.env.RELEASE_DATA_TABLE,
         Item: {
-          campaignId: campaignId,
-          artistId: artistId,
           refreshToken: refreshToken,
+          artistId: artistId,
+          artistName: artistName,
+          campaignId: campaignId,
           uris: releaseResponse.uris,
           releases: releaseResponse.releases,
           updatedAt: timestamp,

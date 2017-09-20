@@ -9,8 +9,8 @@ module.exports.update = (event, context, callback) => {
   
   // validation
   if (
-    typeof data.artistId === "undefined" ||
     typeof data.artistName === "undefined" ||
+    typeof data.artistId === "undefined" ||
     typeof data.callback === "undefined"
   ) {
     console.error("Validation Failed");
@@ -25,8 +25,8 @@ module.exports.update = (event, context, callback) => {
     },
     ExpressionAttributeValues: {
       ":artistName": data.artistName,
-      ":callback": data.callback,
       ":artistId": data.artistId,
+      ":callback": data.callback,
       ":updatedAt": timestamp
     },
     UpdateExpression:

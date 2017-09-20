@@ -63,14 +63,13 @@ module.exports.process = (event, context, callback) => {
     console.log(JSON.stringify(record.dynamodb.NewImage));
     if (record.dynamodb.NewImage) {
       const subscriberId = record.dynamodb.NewImage.subscriberId.S;
-      const playlistId = record.dynamodb.NewImage.playlistId.S;
       const campaignId = record.dynamodb.NewImage.campaignId.S;
+      const playlistId = record.dynamodb.NewImage.playlistId ? record.dynamodb.NewImage.playlistId.S : null;
       const uris = record.dynamodb.NewImage.uris.S;
       const refreshToken = record.dynamodb.NewImage.refreshToken.S;
       const spotifyId = record.dynamodb.NewImage.spotifyId.S;
       if (
         typeof subscriberId === "undefined" ||
-        typeof playlistId === "undefined" ||
         typeof campaignId === "undefined" ||
         typeof uris === "undefined" ||
         typeof refreshToken === "undefined" ||
@@ -84,7 +83,8 @@ module.exports.process = (event, context, callback) => {
       fetchAccessToken(refreshToken).then(accessToken => {
         const spotifyAPI = new SpotifyWebApi(spotifyConfig);
         spotifyAPI.setAccessToken(accessToken);
-
+        const $playlist = playlistId ? Promise.resolve(playlistId) : spotifyAPI.createPlaylist(spotifyId, releaseTitle, { 'public' : false }).then(data => { console.log('returned subscriber data ', data); return data.id });
+        
         insertSpotifyTransactionHistoryRecord(
           "began inserting " +
             uris +

@@ -20,7 +20,6 @@ module.exports.callback = (event, context, callback) => {
   };
 
   $post(authOptions).then((data) => {
-    console.log(data);
     const response = {
       statusCode: 200,
       headers: { 'Access-Control-Allow-Origin': '*' },

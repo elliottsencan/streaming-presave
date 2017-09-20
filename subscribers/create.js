@@ -13,7 +13,6 @@ module.exports.create = (event, context, callback) => {
   if (
     typeof data.refreshToken === "undefined" ||
     typeof data.campaignId === "undefined" ||
-    typeof data.playlistId === "undefined" ||
     typeof data.spotifyId === "undefined"
   ) {
     console.error("Validation Failed");
@@ -27,11 +26,12 @@ module.exports.create = (event, context, callback) => {
       subscriberId: uuid.v1(),
       refreshToken: data.refreshToken,
       campaignId: data.campaignId,
-      playlistId: data.playlistId,
-      email: data.email,
       spotifyId: data.spotifyId,
       createdAt: timestamp,
-      updatedAt: timestamp
+      updatedAt: timestamp,
+      //optional
+      playlistId: data.playlistId || null,
+      email: data.email || null
     }
   };
 

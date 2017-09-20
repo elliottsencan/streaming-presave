@@ -7,9 +7,10 @@ module.exports.create = (event, context, callback) => {
   const timestamp = new Date().getTime();
   const data = JSON.parse(event.body);
   if (
-    typeof data.refreshToken !== "string" ||
-    typeof data.artistId !== "string" ||
-    typeof data.artistName !== "string"
+    typeof data.refreshToken === "undefined" ||
+    typeof data.artistId === "undefined" ||
+    typeof data.artistName === "undefined" ||
+    typeof data.callback === "undefined"
   ) {
     console.error("Validation Failed");
     callback(new Error("Couldn't create campaign."));

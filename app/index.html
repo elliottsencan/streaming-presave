@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>FanPresave.com | Spotify</title>
+  <title>Fan Presave | Spotify</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
   <style type="text/css">
@@ -44,7 +44,7 @@
 
     @media (min-width: 48em) {
       .container {
-        max-width: 46rem;
+        max-width: 30rem;
       }
     }
 
@@ -126,7 +126,7 @@
 
 <body>
   <div class="header clearfix text-center">
-    <h3 class="text-muted">Fanpresave.com</h3>
+    <h3 class="text-muted">Fan Presave</h3>
   </div>
   <div id="login" style="display:none;">
     <h1>This is an example of the Authorization Code flow</h1>
@@ -149,17 +149,17 @@
         <button type="submit" class="btn btn-success btn-block">Add to Playlist</button>
       </form>
 
-      <!-- <div class="text-center col-md-12">
+      <div class="text-center col-md-12">
         <p class="or-text text-muted">or</p>
       </div>
       <div class="col-md-12">
-        <button type="submit" class="btn btn-success btn-block">Create New Playlist</button>
-      </div> -->
+        <button id="createPlaylist" type="button" class="btn btn-success btn-block">Create New Playlist</button>
+      </div>
     </div>
     <div class="col-md-12">
       <div class="form-check col-md-12">
         <label class="form-check-label">
-        <input class="form-check-input" type="checkbox" value="" checked="">
+        <input id="addEmail" class="form-check-input" type="checkbox" value="" checked="">
         Notify me via email when added to my library
       </label>
       </div>
@@ -168,12 +168,11 @@
 
   <div id="success" class="jumbotron" style="display:none;">
     <h2 class="display-3">Success!</h2>
-    <p class="lead">We've successsfully presaved to your spotify account.</p>
-    <p><a class="btn btn-default" href="#" role="button" id="closeWindow">Close this window</a></p>
+    <p class="lead">We've successsfully presaved to your spotify account. Redirecting...</p>
   </div>
 
   <footer class="fixed-bottom footer text-center">
-    <p>© Fanpresave.com 2017</p>
+    <p>Fanpresave.com 2017</p>
   </footer>
   <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
   <script>
@@ -211,7 +210,7 @@
           $('#success').hide();
           $.ajax({
             crossDomain: true,
-            url: 'https://www.fanpresave.com/api/callback/' + code
+            url: 'https://api.fanpresave.com/dev/callback/' + code
           }).then(function(response) {
             access_token = response.access_token;
             refresh_token = response.refresh_token;
@@ -250,30 +249,57 @@
 
       function addToPlaylist(evt) {
         evt.preventDefault();
+        var addEmail = $('addEmail').is(':checked');
 
         jQuery.ajax({
           crossDomain: true,
           type: "POST",
-          url: 'https://www.fanpresave.com/api/subscribers',
+          url: 'https://api.fanpresave.com/dev/subscribers',
           data: JSON.stringify({
             "campaignId": campaign_id,
             "refreshToken": refresh_token,
             "playlistId": $('#userPlaylistsPlaceholder').val(),
-            "email": email,
+            "email": addEmail ? email : null,
             "spotifyId": spotify_id
           })
-        }).then(function(response) {
-          $('#login').hide();
-          $('#loggedin').hide();
-          $('#success').show();
-        });
+        }).then(createCallback);
+      }
+
+      function createPlaylist(evt) {
+        evt.preventDefault();
+        var addEmail = $('addEmail').is(':checked');
+
+        jQuery.ajax({
+          crossDomain: true,
+          type: "POST",
+          url: 'https://api.fanpresave.com/dev/subscribers',
+          data: JSON.stringify({
+            "campaignId": campaign_id,
+            "refreshToken": refresh_token,
+            "email": addEmail ? email : null,
+            "spotifyId": spotify_id
+          })
+        }).then(createCallback);
+      }
+
+      function createCallback(response) {
+        $('#login').hide();
+        $('#loggedin').hide();
+        $('#success').show();
+
+        window.setTimeout(function() {
+          $.ajax({
+            url: 'https://api.fanpresave.com/dev/campaigns/' + campaign_id,
+            method: 'GET',
+            crossDomain: true
+          }).then(function(response) {
+            window.location.href = response.callback;
+          });
+        }, 5000)
       }
 
       $('#addToPlaylist').on('submit', addToPlaylist);
-
-      $("#closeWindow").on('click', function() {
-        window.close();
-      });
+      $('#createPlaylist').on('click', createPlaylist);
     })();
   </script>
 </body>
