@@ -69,8 +69,8 @@ functions:
           cors: true
   release-data-create:
     handler: release-data/create.create
-    # events:
-    #   - stream: arn:aws:dynamodb:us-east-1:353948116047:table/fan-presave-campaigns-dev/stream/2017-09-13T17:41:03.640
+    events:
+      - stream: arn:aws:dynamodb:us-east-1:353948116047:table/fan-presave-campaigns-dev/stream/2017-09-20T06:26:49.270
   release-data-scheduled:
     handler: release-data/scheduled.scheduled
     events:
@@ -84,8 +84,8 @@ functions:
           cors: true
   update-queue:
     handler: update-queue/process.process
-    # events:
-    #   - stream: arn:aws:dynamodb:us-east-1:353948116047:table/fan-presave-update-queue-dev/stream/2017-09-13T17:41:03.669
+    events:
+      - stream: arn:aws:dynamodb:us-east-1:353948116047:table/fan-presave-update-queue-dev/stream/2017-09-20T06:26:51.178
 resources:
   Resources:
     CampaignsDynamoDbTable:

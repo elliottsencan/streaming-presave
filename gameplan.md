@@ -95,7 +95,7 @@ curl -X POST https://jd5p2c5j3l.execute-api.us-east-1.amazonaws.com/dev/campaign
 curl -X POST https://wz4byxcjy3.execute-api.us-east-1.amazonaws.com/dev/campaigns --data '{ "refreshToken" : "AQCzCkSGsXBxgqW4mSjNU9B9CO9GjUoLb0bD55hJbKSOUdm_sdfCo1_YayP5LoI_tCKDrXXC20nlY3gNSs7Nw5u8dqMX9E5A1jgVggOQmFWgK8xotCLxByBmVTvUTNKD3H0", "artistId": "6ldZGvFDjs6KafLouTBHJ9"}'
 
 
-curl -X POST https://www.fanpresave.com/api/campaigns --data '{ "artistId" : "0cm4IOBfqQGuzI0LzyL1yX", "refreshToken" : "AQCLwSnCkvD1kKahExk20aRzUzDIxBFvtV-GWZcMkILz0KfJQL-aDFF-5Rxpy11xPf7-RlqlH5-YMjNmz_SCEkdFve8abCSg82DbZbnx3ox-7gGKokZqrn2Aq9h7Nd6_dvo"}'
+curl -X POST https://api.fanpresave.com/dev/campaigns --data '{ "refreshToken" : "AQCzCkSGsXBxgqW4mSjNU9B9CO9GjUoLb0bD55hJbKSOUdm_sdfCo1_YayP5LoI_tCKDrXXC20nlY3gNSs7Nw5u8dqMX9E5A1jgVggOQmFWgK8xotCLxByBmVTvUTNKD3H0", "artistId": "6ldZGvFDjs6KafLouTBHJ9", "artistName" : "Hollywood Principle", "callback" : "http://hollywoodprinciple.com/"}'
 
 curl -X PUT https://api.fanpresave.com/dev/campaigns/277eace0-9a94-11e7-b0a9-5b8c9193bfbe --data '{"artistId":"0cm4IOBfqQGuzI0LzyL1yX", "artistName": "Broken Stems", "callback": "http://brokenstems.com/welcome.html"}'
 
@@ -108,9 +108,12 @@ jQuery.post({url: 'http://www.fanpresave.com/api/subscribers', data: { "campaign
 delete campaign
 curl -X DELETE https://jd5p2c5j3l.execute-api.us-east-1.amazonaws.com/dev/campaigns/73043ff0-856c-11e7-b962-3f86dcc2d005
 
+curl -X POST https://www.fanpresave.com/api/campaigns --data '{ "artistId" : "0cm4IOBfqQGuzI0LzyL1yX", "refreshToken" : "AQCLwSnCkvD1kKahExk20aRzUzDIxBFvtV-GWZcMkILz0KfJQL-aDFF-5Rxpy11xPf7-RlqlH5-YMjNmz_SCEkdFve8abCSg82DbZbnx3ox-7gGKokZqrn2Aq9h7Nd6_dvo"}'
 
-
-
+typeof data.refreshToken === "undefined" ||
+typeof data.artistId === "undefined" ||
+typeof data.artistName === "undefined" ||
+typeof data.callback === "undefined"
 
 [
 {

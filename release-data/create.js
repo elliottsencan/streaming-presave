@@ -48,6 +48,7 @@ const fetchAccessToken = refreshToken => {
   };
 
   return $post(authParams).then(response => {
+    console.log('fetch access token response ', response);
     insertSpotifyTransactionHistoryRecord(
       "successfully fetched access token:" +
         response.body.access_token +
@@ -55,6 +56,10 @@ const fetchAccessToken = refreshToken => {
         refreshToken
     );
     return response.body.access_token;
+  }).catch(error => {
+    insertSpotifyTransactionHistoryRecord(
+      "spotify fetch failed : " + JSON.stringify(error)
+    );
   });
 };
 
@@ -132,8 +137,9 @@ const fetchReleaseData = (refreshToken, artistId) => {
 };
 
 module.exports.create = (event, context, callback) => {
+  console.log(JSON.stringify(event.Records));
   event.Records.forEach(function(record) {
-    console.log("creating release data record from " + record);
+    console.log("creating release data record from " + JSON.stringify(record));
     const campaignId = record.dynamodb.NewImage.campaignId.S;
     const artistId = record.dynamodb.NewImage.artistId.S;
     const artistName = record.dynamodb.NewImage.artistId.S;
