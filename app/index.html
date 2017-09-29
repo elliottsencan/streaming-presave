@@ -196,6 +196,7 @@
       var access_token,
         refresh_token,
         email,
+        display_name,
         code = params.code,
         campaign_id = params.state,
         error = params.error;
@@ -222,6 +223,7 @@
             }).then(function(response) {
               email = response.email;
               spotify_id = response.id;
+              display_name = response.display_name;
               $.ajax({
                 url: "https://api.spotify.com/v1/users/" + response.id + "/playlists",
                 headers: {
@@ -258,6 +260,7 @@
           data: JSON.stringify({
             "campaignId": campaign_id,
             "refreshToken": refresh_token,
+            "displayName": display_name,
             "playlistId": $('#userPlaylistsPlaceholder').val(),
             "email": addEmail ? email : null,
             "spotifyId": spotify_id
@@ -276,6 +279,7 @@
           data: JSON.stringify({
             "campaignId": campaign_id,
             "refreshToken": refresh_token,
+            "displayName": display_name,
             "email": addEmail ? email : null,
             "spotifyId": spotify_id
           })

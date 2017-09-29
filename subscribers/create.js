@@ -30,6 +30,7 @@ module.exports.create = (event, context, callback) => {
       createdAt: timestamp,
       updatedAt: timestamp,
       //optional
+      displayName: data.displayName || null,
       playlistId: data.playlistId || null,
       email: data.email || null
     }

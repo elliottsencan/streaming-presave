@@ -10,6 +10,7 @@ module.exports.create = (event, context, callback) => {
     typeof data.refreshToken === "undefined" ||
     typeof data.artistId === "undefined" ||
     typeof data.artistName === "undefined" ||
+    typeof data.releaseTitle === "undefined" ||
     typeof data.callback === "undefined"
   ) {
     console.error("Validation Failed");
@@ -24,6 +25,7 @@ module.exports.create = (event, context, callback) => {
       refreshToken : data.refreshToken,
       artistId: data.artistId,
       artistName: data.artistName,
+      releaseTitle: data.releaseTitle,
       callback: data.callback,
       createdAt: timestamp,
       updatedAt: timestamp

@@ -32,12 +32,11 @@ const fetchAccessToken = refreshToken => {
   const authParams = {
     url: "https://accounts.spotify.com/api/token",
     headers: {
-      Authorization:
-        "Basic " +
+      Authorization: "Basic " +
         new Buffer(
           process.env.SPOTIFY_CLIENT_ID +
-            ":" +
-            process.env.SPOTIFY_CLIENT_SECRET
+          ":" +
+          process.env.SPOTIFY_CLIENT_SECRET
         ).toString("base64")
     },
     form: {
@@ -51,9 +50,9 @@ const fetchAccessToken = refreshToken => {
     console.log('fetch access token response ', response);
     insertSpotifyTransactionHistoryRecord(
       "successfully fetched access token:" +
-        response.body.access_token +
-        "  with " +
-        refreshToken
+      response.body.access_token +
+      "  with " +
+      refreshToken
     );
     return response.body.access_token;
   }).catch(error => {
@@ -71,13 +70,15 @@ const fetchArtistAlbums = (refreshToken, artistId) => {
     const spotifyAPI = new SpotifyWebApi(spotifyConfig);
     spotifyAPI.setAccessToken(accessToken);
     return spotifyAPI
-      .getArtistAlbums(artistId)
+      .getArtistAlbums(artistId, {
+        album_type: 'album,single'
+      })
       .then(response => {
         insertSpotifyTransactionHistoryRecord(
           "succesfully fetched artist: " +
-            artistId +
-            "'s albums with response of " +
-            JSON.stringify(response)
+          artistId +
+          "'s albums with response of " +
+          JSON.stringify(response)
         );
         return response.body.items.map(item => {
           return item.id;
@@ -99,9 +100,9 @@ const fetchAlbumTrackUris = (refreshToken, albumId) => {
       .then(response => {
         insertSpotifyTransactionHistoryRecord(
           "successfully fetched album:" +
-            albumId +
-            "'s tracks with response of " +
-            JSON.stringify(response)
+          albumId +
+          "'s tracks with response of " +
+          JSON.stringify(response)
         );
         return response.body.items
           .map(item => {
@@ -120,7 +121,7 @@ const fetchReleaseData = (refreshToken, artistId) => {
   );
   let response = {};
   return fetchArtistAlbums(refreshToken, artistId).then(albumIds => {
-    console.log("fetching album tracks");
+    console.log("fetching album tracks ", console.log(albumIds));
     response.releases = albumIds.join(",");
     const trackUris = albumIds.map(albumId => {
       return fetchAlbumTrackUris(refreshToken, albumId);
@@ -142,7 +143,7 @@ module.exports.create = (event, context, callback) => {
     console.log("creating release data record from " + JSON.stringify(record));
     const campaignId = record.dynamodb.NewImage.campaignId.S;
     const artistId = record.dynamodb.NewImage.artistId.S;
-    const artistName = record.dynamodb.NewImage.artistId.S;
+    const artistName = record.dynamodb.NewImage.artistName.S;
     const refreshToken = record.dynamodb.NewImage.refreshToken.S;
     if (
       typeof refreshToken === "undefined" ||

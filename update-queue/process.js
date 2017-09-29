@@ -64,6 +64,7 @@ module.exports.process = (event, context, callback) => {
     if (record.dynamodb.NewImage) {
       const subscriberId = record.dynamodb.NewImage.subscriberId.S;
       const campaignId = record.dynamodb.NewImage.campaignId.S;
+      const releaseTitle = record.dynamodb.NewImage.releaseTitle.S;
       const playlistId = record.dynamodb.NewImage.playlistId ? record.dynamodb.NewImage.playlistId.S : null;
       const uris = record.dynamodb.NewImage.uris.S;
       const refreshToken = record.dynamodb.NewImage.refreshToken.S;

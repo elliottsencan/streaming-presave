@@ -32,12 +32,11 @@ const fetchAccessToken = refreshToken => {
   const authParams = {
     url: "https://accounts.spotify.com/api/token",
     headers: {
-      Authorization:
-        "Basic " +
+      Authorization: "Basic " +
         new Buffer(
           process.env.SPOTIFY_CLIENT_ID +
-            ":" +
-            process.env.SPOTIFY_CLIENT_SECRET
+          ":" +
+          process.env.SPOTIFY_CLIENT_SECRET
         ).toString("base64")
     },
     form: {
@@ -50,9 +49,9 @@ const fetchAccessToken = refreshToken => {
   return $post(authParams).then(response => {
     insertSpotifyTransactionHistoryRecord(
       "successfully fetched access token:" +
-        response.body.access_token +
-        "  with " +
-        refreshToken
+      response.body.access_token +
+      "  with " +
+      refreshToken
     );
     return response.body.access_token;
   });
@@ -66,13 +65,15 @@ const fetchArtistAlbums = (refreshToken, artistId) => {
     const spotifyAPI = new SpotifyWebApi(spotifyConfig);
     spotifyAPI.setAccessToken(accessToken);
     return spotifyAPI
-      .getArtistAlbums(artistId)
+      .getArtistAlbums(artistId, {
+        album_type: 'album,single'
+      })
       .then(response => {
         insertSpotifyTransactionHistoryRecord(
           "succesfully fetched artist: " +
-            artistId +
-            "'s albums with response of " +
-            JSON.stringify(response)
+          artistId +
+          "'s albums with response of " +
+          JSON.stringify(response)
         );
         return response.body.items.map(item => {
           return item.id;
@@ -94,9 +95,9 @@ const fetchAlbumTrackUris = (refreshToken, albumId) => {
       .then(response => {
         insertSpotifyTransactionHistoryRecord(
           "successfully fetched album:" +
-            albumId +
-            "'s tracks with response of " +
-            JSON.stringify(response)
+          albumId +
+          "'s tracks with response of " +
+          JSON.stringify(response)
         );
         return response.body.items
           .map(item => {
@@ -182,9 +183,9 @@ module.exports.scheduled = (event, context, callback) => {
     const timestamp = new Date().getTime();
     console.log(
       "updating release data for " +
-        campaignId +
-        " with release data " +
-        JSON.stringify(releaseData)
+      campaignId +
+      " with release data " +
+      JSON.stringify(releaseData)
     );
     const params = {
       TableName: process.env.RELEASE_DATA_TABLE,
@@ -196,8 +197,7 @@ module.exports.scheduled = (event, context, callback) => {
         ":releases": releaseData.releases,
         ":updatedAt": timestamp
       },
-      UpdateExpression:
-        "SET uris = :uris, releases = :releases, updatedAt = :updatedAt",
+      UpdateExpression: "SET uris = :uris, releases = :releases, updatedAt = :updatedAt",
       ReturnValues: "ALL_NEW"
     };
 
@@ -232,7 +232,7 @@ module.exports.scheduled = (event, context, callback) => {
       const artistId = campaign.artistId;
       const campaignId = campaign.campaignId;
       return Promise.all([
-        campaignId,
+        campaign,
         getReleaseData(campaignId),
         fetchReleaseData(refreshToken, artistId)
       ]);
@@ -241,18 +241,21 @@ module.exports.scheduled = (event, context, callback) => {
     Promise.all($releaseData).then(releaseData => {
       releaseData.forEach(releaseDataDiff => {
         console.log("release data diff ", JSON.stringify(releaseDataDiff));
-        const campaignId = releaseDataDiff[0];
+        const campaignId = releaseDataDiff[0].campaignId;
         const storedReleaseData = releaseDataDiff[1];
         const fetchedReleaseData = releaseDataDiff[2];
-        const storedReleasesUris = storedReleaseData.uris.split(",");
+        const storedReleaseUris = storedReleaseData.uris.split(",");
         const fetchedReleaseUris = fetchedReleaseData.uris.split(",");
-        console.log('storedReleaseUris count', storedReleasesUris.length);
+        console.log('storedReleaseUris count', storedReleaseUris.length);
         console.log('fetchedReleaseUris count', fetchedReleaseUris.length);
 
-        if (fetchedReleaseUris.length > storedReleasesUris.length) {
+        let unique = fetchedReleaseUris.filter(function(uri) {
+          return storedReleaseUris.indexOf(uri) == -1;
+        });
+
+        if (unique.length) {
           console.log('inserting new uris');
-          const diffLength = fetchedReleaseUris.length - storedReleasesUris.length;
-          const newUris = fetchedReleaseUris.slice(0, diffLength).join(",");
+          const newUris = unique.join(",");
           console.log('new uris ', newUris);
           updateReleaseData(campaignId, fetchedReleaseData);
           getSubscribers(campaignId).then(subscribers => {
@@ -262,6 +265,7 @@ module.exports.scheduled = (event, context, callback) => {
                 subscriberId: subscriber.subscriberId,
                 campaignId: subscriber.campaignId,
                 refreshToken: subscriber.refreshToken,
+                releaseTitle: campaign.releaseTitle, 
                 email: subscriber.email,
                 playlistId: subscriber.playlistId,
                 spotifyId: subscriber.spotifyId,
